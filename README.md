@@ -1,12 +1,13 @@
 # BBL User API
 
 A small RESTful API for managing users, built with **Java 25 (latest LTS)** and **Spring Boot 4.0**.
-User data is stored **in memory** (seeded with sample records on startup) — no database required.
+User data is stored **in memory** — no database required. The store starts **empty**; create users via `POST /users`.
 
 ## Tech stack
 
 - Java 25 (latest LTS)
 - Spring Boot 4.0 (`spring-boot-starter-web`, `spring-boot-starter-validation`)
+- Lombok (getters/setters/constructors)
 - Gradle (with wrapper)
 - JUnit 5 + Spring MockMvc for tests
 

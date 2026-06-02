@@ -6,8 +6,6 @@ import com.bbl.userapi.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -21,22 +19,27 @@ class UserServiceTest {
     }
 
     @Test
-    void findAll_returnsSeededUsers() {
-        List<User> users = service.findAll();
-        assertThat(users).hasSize(3);
-        assertThat(users).extracting(User::getUsername)
-                .contains("Bret", "Antonette", "Samantha");
+    void findAll_startsEmpty() {
+        assertThat(service.findAll()).isEmpty();
     }
 
     @Test
     void create_assignsIdAndStoresUser() {
-        UserRequest request = newRequest("Ada Lovelace", "ada", "ada@example.com");
+        User created = service.create(newRequest("Ada Lovelace", "ada", "ada@example.com"));
 
-        User created = service.create(request);
-
-        assertThat(created.getId()).isNotNull();
-        assertThat(service.findAll()).hasSize(4);
+        assertThat(created.getId()).isEqualTo(1L);
+        assertThat(service.findAll()).hasSize(1);
         assertThat(service.getOrThrow(created.getId()).getName()).isEqualTo("Ada Lovelace");
+    }
+
+    @Test
+    void create_incrementsIdForEachUser() {
+        User first = service.create(newRequest("First", "first", "first@example.com"));
+        User second = service.create(newRequest("Second", "second", "second@example.com"));
+
+        assertThat(first.getId()).isEqualTo(1L);
+        assertThat(second.getId()).isEqualTo(2L);
+        assertThat(service.findAll()).hasSize(2);
     }
 
     @Test
@@ -47,9 +50,11 @@ class UserServiceTest {
 
     @Test
     void update_existingUser_overwritesFields() {
-        User updated = service.update(1L, newRequest("New Name", "newuser", "new@example.com"));
+        Long id = service.create(newRequest("Old Name", "old", "old@example.com")).getId();
 
-        assertThat(updated.getId()).isEqualTo(1L);
+        User updated = service.update(id, newRequest("New Name", "newuser", "new@example.com"));
+
+        assertThat(updated.getId()).isEqualTo(id);
         assertThat(updated.getName()).isEqualTo("New Name");
         assertThat(updated.getUsername()).isEqualTo("newuser");
     }
@@ -62,9 +67,12 @@ class UserServiceTest {
 
     @Test
     void delete_existingUser_removesIt() {
-        service.delete(1L);
-        assertThat(service.findById(1L)).isEmpty();
-        assertThat(service.findAll()).hasSize(2);
+        Long id = service.create(newRequest("To Delete", "todelete", "del@example.com")).getId();
+
+        service.delete(id);
+
+        assertThat(service.findById(id)).isEmpty();
+        assertThat(service.findAll()).isEmpty();
     }
 
     @Test

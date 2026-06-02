@@ -30,21 +30,38 @@ class UserControllerTest {
         return MockMvcBuilders.webAppContextSetup(context).build();
     }
 
+    /** POST a user and return the resource path from the Location header (e.g. "/users/4"). */
+    private String createUser(String name, String username, String email) throws Exception {
+        String body = """
+                {"name":"%s","username":"%s","email":"%s"}
+                """.formatted(name, username, email);
+        String location = mockMvc().perform(post("/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getHeader("Location");
+        return location.substring(location.indexOf("/users"));
+    }
+
     @Test
-    void getAllUsers_returnsSeededList() throws Exception {
+    void getAllUsers_returnsJsonList() throws Exception {
+        createUser("List One", "listone", "listone@example.com");
+
         mockMvc().perform(get("/users"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$", hasSize(greaterThanOrEqualTo(3))))
+                .andExpect(jsonPath("$", hasSize(greaterThanOrEqualTo(1))))
                 .andExpect(jsonPath("$[0].username").exists());
     }
 
     @Test
     void getUser_existing_returnsUser() throws Exception {
-        mockMvc().perform(get("/users/{id}", 1))
+        String path = createUser("Read Me", "readme", "readme@example.com");
+
+        mockMvc().perform(get(path))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.name").value("Leanne Graham"));
+                .andExpect(jsonPath("$.name").value("Read Me"))
+                .andExpect(jsonPath("$.username").value("readme"));
     }
 
     @Test
@@ -97,6 +114,22 @@ class UserControllerTest {
     }
 
     @Test
+    void updateUser_existing_returns200() throws Exception {
+        String path = createUser("Before", "before", "before@example.com");
+
+        String body = """
+                {"name":"After","username":"after","email":"after@example.com"}
+                """;
+
+        mockMvc().perform(put(path)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("After"))
+                .andExpect(jsonPath("$.username").value("after"));
+    }
+
+    @Test
     void updateUser_unknown_returns404() throws Exception {
         String body = """
                 {"name":"X","username":"x","email":"x@example.com"}
@@ -110,20 +143,7 @@ class UserControllerTest {
 
     @Test
     void deleteUser_existing_returns204() throws Exception {
-        // Create first, then delete the resource pointed to by the Location header,
-        // so the test does not depend on seed ordering across other tests.
-        String body = """
-                {"name":"To Delete","username":"todelete","email":"del@example.com"}
-                """;
-
-        String location = mockMvc().perform(post("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
-                .andExpect(status().isCreated())
-                .andReturn().getResponse().getHeader("Location");
-
-        // Location is an absolute URI (e.g. http://localhost/users/4); use its path part.
-        String path = location.substring(location.indexOf("/users"));
+        String path = createUser("To Delete", "todelete", "del@example.com");
 
         mockMvc().perform(delete(path))
                 .andExpect(status().isNoContent());

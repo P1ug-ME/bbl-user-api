@@ -14,26 +14,13 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * In-memory user store. Backed by a ConcurrentHashMap so it is safe under the
- * servlet container's request threads. Seeded with sample data on startup.
+ * servlet container's request threads. The store starts empty.
  */
 @Service
 public class UserService {
 
     private final Map<Long, User> store = new ConcurrentHashMap<>();
     private final AtomicLong sequence = new AtomicLong(0);
-
-    public UserService() {
-        seed();
-    }
-
-    private void seed() {
-        save(new User(null, "Leanne Graham", "Bret", "Sincere@april.biz",
-                "1-770-736-8031 x56442", "hildegard.org"));
-        save(new User(null, "Ervin Howell", "Antonette", "Shanna@melissa.tv",
-                "010-692-6593 x09125", "anastasia.net"));
-        save(new User(null, "Clementine Bauch", "Samantha", "Nathan@yesenia.net",
-                "1-463-123-4447", "ramiro.info"));
-    }
 
     public List<User> findAll() {
         return new ArrayList<>(store.values());
@@ -74,12 +61,5 @@ public class UserService {
         if (store.remove(id) == null) {
             throw new UserNotFoundException(id);
         }
-    }
-
-    private User save(User user) {
-        Long id = sequence.incrementAndGet();
-        user.setId(id);
-        store.put(id, user);
-        return user;
     }
 }
