@@ -1,6 +1,7 @@
 package com.bbl.userapi.controller;
 
 import com.bbl.userapi.dto.UserRequest;
+import com.bbl.userapi.dto.UserUpdateRequest;
 import com.bbl.userapi.model.User;
 import com.bbl.userapi.service.UserService;
 import jakarta.validation.Valid;
@@ -50,7 +51,7 @@ public class UserController {
     }
 
     @PutMapping(value = "/{userId}", consumes = "application/json")
-    public User updateUser(@PathVariable Long userId, @Valid @RequestBody UserRequest request) {
+    public User updateUser(@PathVariable Long userId, @Valid @RequestBody UserUpdateRequest request) {
         return userService.update(userId, request);
     }
 

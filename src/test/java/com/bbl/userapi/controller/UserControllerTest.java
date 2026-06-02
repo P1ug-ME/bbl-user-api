@@ -114,19 +114,36 @@ class UserControllerTest {
     }
 
     @Test
-    void updateUser_existing_returns200() throws Exception {
+    void updateUser_singleField_changesOnlyThatField() throws Exception {
         String path = createUser("Before", "before", "before@example.com");
 
+        // Send only the phone field — name/username/email must stay unchanged.
         String body = """
-                {"name":"After","username":"after","email":"after@example.com"}
+                {"phone":"099-999-9999"}
                 """;
 
         mockMvc().perform(put(path)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("After"))
-                .andExpect(jsonPath("$.username").value("after"));
+                .andExpect(jsonPath("$.phone").value("099-999-9999"))
+                .andExpect(jsonPath("$.name").value("Before"))
+                .andExpect(jsonPath("$.username").value("before"))
+                .andExpect(jsonPath("$.email").value("before@example.com"));
+    }
+
+    @Test
+    void updateUser_invalidEmail_returns400() throws Exception {
+        String path = createUser("Valid", "valid", "valid@example.com");
+
+        String body = """
+                {"email":"not-an-email"}
+                """;
+
+        mockMvc().perform(put(path)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest());
     }
 
     @Test

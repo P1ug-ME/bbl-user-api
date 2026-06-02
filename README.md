@@ -36,7 +36,7 @@ docker run -p 8080:8080 bbl-user-api
 | GET    | `/users`         | List all users             | 200     | —                 |
 | GET    | `/users/{id}`    | Get one user               | 200     | 404               |
 | POST   | `/users`         | Create a user              | 201     | 400               |
-| PUT    | `/users/{id}`    | Update a user              | 200     | 400, 404          |
+| PUT    | `/users/{id}`    | Partial update (one or more fields) | 200 | 400, 404      |
 | DELETE | `/users/{id}`    | Delete a user              | 204     | 404               |
 
 `POST` returns a `Location` header pointing at the created resource.
@@ -56,9 +56,11 @@ docker run -p 8080:8080 bbl-user-api
 
 ### Validation
 
-For `POST` and `PUT`, `name`, `username`, and `email` are required (non-blank);
-`email` must be a valid email address. Failures return `400 Bad Request` with a
-JSON body listing the offending fields:
+For `POST`, `name`, `username`, and `email` are required (non-blank).
+`PUT` is a **partial update**: every field is optional and only the fields you send are
+changed (the rest are left untouched), so you can update a single field on its own.
+In both cases, if `email` is present it must be a valid email address.
+Failures return `400 Bad Request` with a JSON body listing the offending fields:
 
 ```json
 {
@@ -87,10 +89,10 @@ curl -X POST http://localhost:8080/users \
 # Get one
 curl http://localhost:8080/users/1
 
-# Update
+# Update just one field (partial update)
 curl -X PUT http://localhost:8080/users/1 \
   -H 'Content-Type: application/json' \
-  -d '{"name":"New Name","username":"Bret","email":"new@example.com"}'
+  -d '{"phone":"099-999-9999"}'
 
 # Delete
 curl -i -X DELETE http://localhost:8080/users/1

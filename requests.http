@@ -29,14 +29,12 @@ Content-Type: application/json
   "phone": "123"
 }
 
-### Update a user (200)
+### Update a single field (200) — partial update, only phone changes
 PUT http://localhost:8080/users/1
 Content-Type: application/json
 
 {
-  "name": "Leanne Graham Updated",
-  "username": "Bret",
-  "email": "leanne@example.com"
+  "phone": "099-999-9999"
 }
 
 ### Update non-existent (404)
@@ -44,9 +42,7 @@ PUT http://localhost:8080/users/9999
 Content-Type: application/json
 
 {
-  "name": "X",
-  "username": "x",
-  "email": "x@example.com"
+  "name": "X"
 }
 
 ### Delete a user (204)

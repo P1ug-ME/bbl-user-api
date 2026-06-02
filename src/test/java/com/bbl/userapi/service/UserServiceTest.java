@@ -1,6 +1,7 @@
 package com.bbl.userapi.service;
 
 import com.bbl.userapi.dto.UserRequest;
+import com.bbl.userapi.dto.UserUpdateRequest;
 import com.bbl.userapi.exception.UserNotFoundException;
 import com.bbl.userapi.model.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,17 +45,40 @@ class UserServiceTest {
     }
 
     @Test
-    void update_existingUser_overwritesFields() {
-        User updated = service.update(1L, newRequest("แก้ไข แล้ว", "edited", "edited@example.co.th"));
+    void update_onlyChangesProvidedField_leavesOthersUntouched() {
+        User before = service.getOrThrow(1L);
+        String originalName = before.getName();
+        String originalEmail = before.getEmail();
+
+        // Change only the phone field.
+        UserUpdateRequest req = new UserUpdateRequest();
+        req.setPhone("099-999-9999");
+
+        User updated = service.update(1L, req);
 
         assertThat(updated.getId()).isEqualTo(1L);
+        assertThat(updated.getPhone()).isEqualTo("099-999-9999");
+        assertThat(updated.getName()).isEqualTo(originalName);
+        assertThat(updated.getEmail()).isEqualTo(originalEmail);
+    }
+
+    @Test
+    void update_multipleProvidedFields_areApplied() {
+        UserUpdateRequest req = new UserUpdateRequest();
+        req.setName("แก้ไข แล้ว");
+        req.setUsername("edited");
+
+        User updated = service.update(1L, req);
+
         assertThat(updated.getName()).isEqualTo("แก้ไข แล้ว");
         assertThat(updated.getUsername()).isEqualTo("edited");
     }
 
     @Test
     void update_unknownUser_throwsNotFound() {
-        assertThatThrownBy(() -> service.update(9999L, newRequest("X", "x", "x@example.co.th")))
+        UserUpdateRequest req = new UserUpdateRequest();
+        req.setName("X");
+        assertThatThrownBy(() -> service.update(9999L, req))
                 .isInstanceOf(UserNotFoundException.class);
     }
 
