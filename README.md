@@ -1,24 +1,24 @@
 # BBL User API
 
-A small RESTful API for managing users, built with **Java 17** and **Spring Boot 3.3**.
+A small RESTful API for managing users, built with **Java 25 (latest LTS)** and **Spring Boot 4.0**.
 User data is stored **in memory** (seeded with sample records on startup) — no database required.
 
 ## Tech stack
 
-- Java 17+
-- Spring Boot 3.3 (`spring-boot-starter-web`, `spring-boot-starter-validation`)
-- Maven
+- Java 25 (latest LTS)
+- Spring Boot 4.0 (`spring-boot-starter-web`, `spring-boot-starter-validation`)
+- Gradle (with wrapper)
 - JUnit 5 + Spring MockMvc for tests
 
 ## Running
 
 ```bash
 # Run the app (http://localhost:8080)
-mvn spring-boot:run
+./gradlew bootRun
 
 # Or build a jar and run it
-mvn clean package
-java -jar target/user-api-1.0.0.jar
+./gradlew clean bootJar
+java -jar build/libs/user-api-1.0.0.jar
 ```
 
 ### With Docker
@@ -100,7 +100,7 @@ See [`requests.http`](requests.http) for a ready-to-run request collection.
 ## Tests
 
 ```bash
-mvn test
+./gradlew test
 ```
 
 - `UserServiceTest` — service-layer logic (CRUD + not-found behaviour).
@@ -120,5 +120,5 @@ src/main/java/com/bbl/userapi
 
 ## CI/CD
 
-`.github/workflows/ci.yml` builds, tests, and builds a Docker image on every push/PR to `main`.
-A commented-out deploy step shows where a registry push / deployment would slot in.
+`.github/workflows/ci.yml` builds, tests, and builds a Docker image on every push/PR to `main`
+(JDK 25 + Gradle). A commented-out deploy step shows where a registry push / deployment would slot in.

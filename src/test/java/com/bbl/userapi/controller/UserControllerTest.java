@@ -1,7 +1,6 @@
 package com.bbl.userapi.controller;
 
 import com.bbl.userapi.UserApiApplication;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -9,8 +8,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-
-import java.util.Map;
 
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -28,9 +25,6 @@ class UserControllerTest {
 
     @Autowired
     private WebApplicationContext context;
-
-    @Autowired
-    private ObjectMapper objectMapper;
 
     private MockMvc mockMvc() {
         return MockMvcBuilders.webAppContextSetup(context).build();
@@ -63,14 +57,13 @@ class UserControllerTest {
 
     @Test
     void createUser_valid_returns201WithLocation() throws Exception {
-        Map<String, String> body = Map.of(
-                "name", "Ada Lovelace",
-                "username", "ada",
-                "email", "ada@example.com");
+        String body = """
+                {"name":"Ada Lovelace","username":"ada","email":"ada@example.com"}
+                """;
 
         mockMvc().perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(body)))
+                        .content(body))
                 .andExpect(status().isCreated())
                 .andExpect(header().exists("Location"))
                 .andExpect(jsonPath("$.id").exists())
@@ -79,11 +72,13 @@ class UserControllerTest {
 
     @Test
     void createUser_missingRequiredFields_returns400() throws Exception {
-        Map<String, String> body = Map.of("phone", "123");
+        String body = """
+                {"phone":"123"}
+                """;
 
         mockMvc().perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(body)))
+                        .content(body))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.errors").isArray());
@@ -91,48 +86,49 @@ class UserControllerTest {
 
     @Test
     void createUser_invalidEmail_returns400() throws Exception {
-        Map<String, String> body = Map.of(
-                "name", "Bad Email",
-                "username", "bad",
-                "email", "not-an-email");
+        String body = """
+                {"name":"Bad Email","username":"bad","email":"not-an-email"}
+                """;
 
         mockMvc().perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(body)))
+                        .content(body))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void updateUser_unknown_returns404() throws Exception {
-        Map<String, String> body = Map.of(
-                "name", "X",
-                "username", "x",
-                "email", "x@example.com");
+        String body = """
+                {"name":"X","username":"x","email":"x@example.com"}
+                """;
 
         mockMvc().perform(put("/users/{id}", 9999)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(body)))
+                        .content(body))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void deleteUser_existing_returns204() throws Exception {
-        // create first so we don't depend on seed ordering across tests
-        Map<String, String> body = Map.of(
-                "name", "To Delete",
-                "username", "todelete",
-                "email", "del@example.com");
+        // Create first, then delete the resource pointed to by the Location header,
+        // so the test does not depend on seed ordering across other tests.
+        String body = """
+                {"name":"To Delete","username":"todelete","email":"del@example.com"}
+                """;
 
-        String response = mockMvc().perform(post("/users")
+        String location = mockMvc().perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(body)))
-                .andReturn().getResponse().getContentAsString();
-        Long id = objectMapper.readTree(response).get("id").asLong();
+                        .content(body))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getHeader("Location");
 
-        mockMvc().perform(delete("/users/{id}", id))
+        // Location is an absolute URI (e.g. http://localhost/users/4); use its path part.
+        String path = location.substring(location.indexOf("/users"));
+
+        mockMvc().perform(delete(path))
                 .andExpect(status().isNoContent());
 
-        mockMvc().perform(get("/users/{id}", id))
+        mockMvc().perform(get(path))
                 .andExpect(status().isNotFound());
     }
 

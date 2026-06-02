@@ -1,7 +1,6 @@
-target/
-*.class
-*.jar
-*.log
+# Gradle
+.gradle/
+build/
 
 # IDE
 .idea/
@@ -14,3 +13,6 @@ target/
 
 # OS
 .DS_Store
+
+# Logs
+*.log

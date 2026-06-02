@@ -1,15 +1,18 @@
 # ---- Build stage ----
-FROM maven:3.9-eclipse-temurin-17 AS build
+FROM eclipse-temurin:25-jdk AS build
 WORKDIR /app
-# Cache dependencies first
-COPY pom.xml .
-RUN mvn -q -B dependency:go-offline
+# Copy the Gradle wrapper first and warm the dependency cache
+COPY gradlew .
+COPY gradle gradle
+COPY settings.gradle build.gradle ./
+RUN chmod +x gradlew && ./gradlew --no-daemon dependencies > /dev/null 2>&1 || true
+# Build the executable boot jar
 COPY src ./src
-RUN mvn -q -B clean package -DskipTests
+RUN ./gradlew --no-daemon clean bootJar
 
 # ---- Runtime stage ----
-FROM eclipse-temurin:17-jre
+FROM eclipse-temurin:25-jre
 WORKDIR /app
-COPY --from=build /app/target/user-api-1.0.0.jar app.jar
+COPY --from=build /app/build/libs/user-api-1.0.0.jar app.jar
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
