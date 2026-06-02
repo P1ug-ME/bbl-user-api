@@ -29,7 +29,19 @@ Content-Type: application/json
   "phone": "123"
 }
 
-### Update a single field (200) — partial update, only phone changes
+### Update a user (200) — name, username, email required
+PUT http://localhost:8080/users/1
+Content-Type: application/json
+
+{
+  "name": "สมชาย ใจดี",
+  "username": "somchai",
+  "email": "somchai@example.co.th",
+  "phone": "099-999-9999",
+  "website": "somchai.co.th"
+}
+
+### Update — validation error (400), missing required fields
 PUT http://localhost:8080/users/1
 Content-Type: application/json
 
@@ -42,7 +54,9 @@ PUT http://localhost:8080/users/9999
 Content-Type: application/json
 
 {
-  "name": "X"
+  "name": "X",
+  "username": "x",
+  "email": "x@example.co.th"
 }
 
 ### Delete a user (204)

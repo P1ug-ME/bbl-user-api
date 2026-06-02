@@ -1,7 +1,6 @@
 package com.bbl.userapi.service;
 
 import com.bbl.userapi.dto.UserRequest;
-import com.bbl.userapi.dto.UserUpdateRequest;
 import com.bbl.userapi.exception.UserNotFoundException;
 import com.bbl.userapi.model.User;
 import org.springframework.stereotype.Service;
@@ -61,27 +60,13 @@ public class UserService {
         return user;
     }
 
-    /**
-     * Partial update: only the fields present (non-null) in the request are applied;
-     * omitted fields keep their current values.
-     */
-    public User update(Long id, UserUpdateRequest request) {
+    public User update(Long id, UserRequest request) {
         User user = getOrThrow(id);
-        if (request.getName() != null) {
-            user.setName(request.getName());
-        }
-        if (request.getUsername() != null) {
-            user.setUsername(request.getUsername());
-        }
-        if (request.getEmail() != null) {
-            user.setEmail(request.getEmail());
-        }
-        if (request.getPhone() != null) {
-            user.setPhone(request.getPhone());
-        }
-        if (request.getWebsite() != null) {
-            user.setWebsite(request.getWebsite());
-        }
+        user.setName(request.getName());
+        user.setUsername(request.getUsername());
+        user.setEmail(request.getEmail());
+        user.setPhone(request.getPhone());
+        user.setWebsite(request.getWebsite());
         return user;
     }
 

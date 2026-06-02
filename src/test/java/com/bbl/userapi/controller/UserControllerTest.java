@@ -114,10 +114,27 @@ class UserControllerTest {
     }
 
     @Test
-    void updateUser_singleField_changesOnlyThatField() throws Exception {
+    void updateUser_existing_returns200() throws Exception {
         String path = createUser("Before", "before", "before@example.com");
 
-        // Send only the phone field — name/username/email must stay unchanged.
+        String body = """
+                {"name":"After","username":"after","email":"after@example.com"}
+                """;
+
+        mockMvc().perform(put(path)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("After"))
+                .andExpect(jsonPath("$.username").value("after"))
+                .andExpect(jsonPath("$.email").value("after@example.com"));
+    }
+
+    @Test
+    void updateUser_missingRequiredFields_returns400() throws Exception {
+        String path = createUser("Valid", "valid", "valid@example.com");
+
+        // name/username/email are required on PUT too — omitting them must fail.
         String body = """
                 {"phone":"099-999-9999"}
                 """;
@@ -125,11 +142,9 @@ class UserControllerTest {
         mockMvc().perform(put(path)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.phone").value("099-999-9999"))
-                .andExpect(jsonPath("$.name").value("Before"))
-                .andExpect(jsonPath("$.username").value("before"))
-                .andExpect(jsonPath("$.email").value("before@example.com"));
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.errors").isArray());
     }
 
     @Test
@@ -137,7 +152,7 @@ class UserControllerTest {
         String path = createUser("Valid", "valid", "valid@example.com");
 
         String body = """
-                {"email":"not-an-email"}
+                {"name":"Valid","username":"valid","email":"not-an-email"}
                 """;
 
         mockMvc().perform(put(path)
