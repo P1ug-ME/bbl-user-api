@@ -6,6 +6,8 @@ import com.bbl.userapi.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -19,27 +21,20 @@ class UserServiceTest {
     }
 
     @Test
-    void findAll_startsEmpty() {
-        assertThat(service.findAll()).isEmpty();
+    void findAll_returnsSeededUsers() {
+        List<User> users = service.findAll();
+        assertThat(users).hasSize(3);
+        assertThat(users).extracting(User::getUsername)
+                .contains("somchai", "suda", "anan");
     }
 
     @Test
-    void create_assignsIdAndStoresUser() {
-        User created = service.create(newRequest("Ada Lovelace", "ada", "ada@example.com"));
+    void create_assignsNextIdAndStoresUser() {
+        User created = service.create(newRequest("ใหม่ ทดสอบ", "newuser", "new@example.co.th"));
 
-        assertThat(created.getId()).isEqualTo(1L);
-        assertThat(service.findAll()).hasSize(1);
-        assertThat(service.getOrThrow(created.getId()).getName()).isEqualTo("Ada Lovelace");
-    }
-
-    @Test
-    void create_incrementsIdForEachUser() {
-        User first = service.create(newRequest("First", "first", "first@example.com"));
-        User second = service.create(newRequest("Second", "second", "second@example.com"));
-
-        assertThat(first.getId()).isEqualTo(1L);
-        assertThat(second.getId()).isEqualTo(2L);
-        assertThat(service.findAll()).hasSize(2);
+        assertThat(created.getId()).isEqualTo(4L);
+        assertThat(service.findAll()).hasSize(4);
+        assertThat(service.getOrThrow(created.getId()).getName()).isEqualTo("ใหม่ ทดสอบ");
     }
 
     @Test
@@ -50,29 +45,24 @@ class UserServiceTest {
 
     @Test
     void update_existingUser_overwritesFields() {
-        Long id = service.create(newRequest("Old Name", "old", "old@example.com")).getId();
+        User updated = service.update(1L, newRequest("แก้ไข แล้ว", "edited", "edited@example.co.th"));
 
-        User updated = service.update(id, newRequest("New Name", "newuser", "new@example.com"));
-
-        assertThat(updated.getId()).isEqualTo(id);
-        assertThat(updated.getName()).isEqualTo("New Name");
-        assertThat(updated.getUsername()).isEqualTo("newuser");
+        assertThat(updated.getId()).isEqualTo(1L);
+        assertThat(updated.getName()).isEqualTo("แก้ไข แล้ว");
+        assertThat(updated.getUsername()).isEqualTo("edited");
     }
 
     @Test
     void update_unknownUser_throwsNotFound() {
-        assertThatThrownBy(() -> service.update(9999L, newRequest("X", "x", "x@example.com")))
+        assertThatThrownBy(() -> service.update(9999L, newRequest("X", "x", "x@example.co.th")))
                 .isInstanceOf(UserNotFoundException.class);
     }
 
     @Test
     void delete_existingUser_removesIt() {
-        Long id = service.create(newRequest("To Delete", "todelete", "del@example.com")).getId();
-
-        service.delete(id);
-
-        assertThat(service.findById(id)).isEmpty();
-        assertThat(service.findAll()).isEmpty();
+        service.delete(1L);
+        assertThat(service.findById(1L)).isEmpty();
+        assertThat(service.findAll()).hasSize(2);
     }
 
     @Test

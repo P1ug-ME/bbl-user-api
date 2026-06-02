@@ -1,5 +1,4 @@
-# NOTE: the in-memory store starts EMPTY. Run the "Create a user" request first
-# so that ids 1, 2, ... exist before calling the GET/PUT/DELETE-by-id requests.
+# The in-memory store is seeded with sample Thai users (ids 1, 2, 3) on startup.
 
 ### List all users
 GET http://localhost:8080/users

@@ -1,7 +1,7 @@
 # BBL User API
 
 A small RESTful API for managing users, built with **Java 25 (latest LTS)** and **Spring Boot 4.0**.
-User data is stored **in memory** — no database required. The store starts **empty**; create users via `POST /users`.
+User data is stored **in memory** — no database required. The store is **seeded with a few sample Thai users** on startup.
 
 ## Tech stack
 
@@ -46,11 +46,11 @@ docker run -p 8080:8080 bbl-user-api
 ```json
 {
   "id": 1,
-  "name": "Leanne Graham",
-  "username": "Bret",
-  "email": "Sincere@april.biz",
-  "phone": "1-770-736-8031 x56442",
-  "website": "hildegard.org"
+  "name": "สมชาย ใจดี",
+  "username": "somchai",
+  "email": "somchai@example.co.th",
+  "phone": "081-234-5678",
+  "website": "somchai.co.th"
 }
 ```
 
