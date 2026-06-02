@@ -1,0 +1,54 @@
+### List all users
+GET http://localhost:8080/users
+
+### Get a single user
+GET http://localhost:8080/users/1
+
+### Get a non-existent user (404)
+GET http://localhost:8080/users/9999
+
+### Create a user (201)
+POST http://localhost:8080/users
+Content-Type: application/json
+
+{
+  "name": "Ada Lovelace",
+  "username": "ada",
+  "email": "ada@example.com",
+  "phone": "1-555-000-0000",
+  "website": "ada.dev"
+}
+
+### Create — validation error (400)
+POST http://localhost:8080/users
+Content-Type: application/json
+
+{
+  "phone": "123"
+}
+
+### Update a user (200)
+PUT http://localhost:8080/users/1
+Content-Type: application/json
+
+{
+  "name": "Leanne Graham Updated",
+  "username": "Bret",
+  "email": "leanne@example.com"
+}
+
+### Update non-existent (404)
+PUT http://localhost:8080/users/9999
+Content-Type: application/json
+
+{
+  "name": "X",
+  "username": "x",
+  "email": "x@example.com"
+}
+
+### Delete a user (204)
+DELETE http://localhost:8080/users/2
+
+### Delete non-existent (404)
+DELETE http://localhost:8080/users/9999

@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Build and test
+        run: mvn -B clean verify
+
+      - name: Build Docker image
+        run: docker build -t bbl-user-api:${{ github.sha }} .
+
+      # --- Deploy step (placeholder) ---
+      # Pushing the image to a registry / deploying would go here, e.g.:
+      #
+      # - name: Push to registry
+      #   run: |
+      #     echo "${{ secrets.REGISTRY_TOKEN }}" | docker login -u "${{ secrets.REGISTRY_USER }}" --password-stdin
+      #     docker tag bbl-user-api:${{ github.sha }} registry.example.com/bbl-user-api:latest
+      #     docker push registry.example.com/bbl-user-api:latest
