@@ -16,3 +16,6 @@ build/
 
 # Logs
 *.log
+
+# Stale Maven output (project uses Gradle)
+target/
